@@ -17,21 +17,25 @@ def add_regs(reg1, reg2):
     global reg_b
 
     if reg1 == "01":
-        val1 = int(reg_a[0]) + int(reg_a[1])
+        val1 = int(reg_a[0], 16) + (int(reg_a[1], 16)  * 256)
     else:
-        val1 = int(reg_b[0]) + int(reg_b[1])
+        val1 = int(reg_b[0], 16) + (int(reg_a[1], 16)  * 256)
 
     if reg2 == "01":
-        val2 = int(reg_a[0]) + int(reg_a[1])
+        val2 = int(reg_a[0], 16) + (int(reg_b[1], 16)  * 256)
     else:
-        val2 = int(reg_b[0]) + int(reg_b[1])
+        val2 = int(reg_b[0], 16) + (int(reg_b[1], 16)  * 256)
 
     new_sum = val1 + val2
+    hex_0 = str(hex(int(new_sum % 256))).strip("0x")
+    hex_1 = str(hex(int(new_sum / 256))).strip("0x")
 
     if reg1 == "01":
-        reg_a = str(new_sum)
+        reg_a[0] = hex_0
+        reg_a[1] = hex_1
     else:
-        reg_b = str(new_sum)
+        reg_b[0] = hex_0
+        reg_b[1] = hex_1
 
 
 def sub_regs():
@@ -57,7 +61,8 @@ def store(reg, loc):
     global main_mem
 
     if reg == "01":
-        main_mem[int(loc, 16)] = reg_a
+        main_mem[int(loc, 16)] = reg_a[0]
+        main_mem[int(loc, 16) + 1] = reg_a[1]
     else:
         main_mem[int(loc, 16)] = reg_b
 
@@ -65,7 +70,7 @@ def store(reg, loc):
 def halt():
     global main_mem
 
-    print(main_mem[14])
+    print(int(main_mem[14], 16) + (int(main_mem[15], 16)  * 256))  
 
 
 
@@ -117,10 +122,10 @@ if __name__ == '__main__':
         "00",  # 13
         "00",  # 14
         "00",  # 15
-        "03",  # 16
-        "01",  # 17
-        "05",  # 18
-        "10",  # 19
+        "01",  # 16
+        "00",  # 17
+        "a1",  # 18
+        "14",  # 19
     ]
     status = True
 
