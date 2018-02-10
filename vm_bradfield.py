@@ -2,8 +2,6 @@
 
 # values in hexidecimal as string.
 
-
-
 # counter - will only be incremented by 1
 reg_pc = 0
 
@@ -12,11 +10,8 @@ reg_pc = 0
 # [1] holds the int value of diving the 'whole' number by 256 (always round down).
 #  ****** BOTH are stored as hexidecimal STRINGS ******
 
-# input, also where output is stored
 reg_a = [0,0]
-# input only
 reg_b = [0,0]
-
 
 
 #  ***********************************
@@ -38,15 +33,38 @@ def set_hex_reg_a(dec_num):
     """
     # the built in hex() adds a "0x" to all its outputs, which interferes with how I'm handling the strings/values in this file.
     hex_0 = str(hex(int(dec_num % 256))).strip("0x")
-    hex_1 = str(hex(int(dec_num / 256))).strip("0x")
+
+    if len(hex_0) == 1:
+        hex_0 = "0" + hex_0
+    if hex_0 == "":
+        print("whaaat?")
     reg_a[0] = hex_0
+
+    # DRY!!!!!!!!  :(
+    hex_1 = str(hex(int(dec_num / 256))).strip("0x")
+    if len(hex_1) == 1:
+        hex_1 = "0" + hex_1
+    if hex_0 == "":
+        print("whaaat?")
     reg_a[1] = hex_1
 
 
 def set_hex_reg_b(dec_num):
     hex_0 = str(hex(int(dec_num % 256))).strip("0x")
-    hex_1 = str(hex(int(dec_num / 256))).strip("0x")
+
+
+    if len(hex_0) == 1:
+        hex_0 = "0" + hex_0
+    if hex_0 == "":
+        print("whaaat?")
     reg_b[0] = hex_0
+    
+    # DRY!!!!!!!!  :(
+    hex_1 = str(hex(int(dec_num / 256))).strip("0x")
+    if len(hex_1) == 1:
+        hex_1 = "0" + hex_1
+    if hex_1 == "":
+        print("whaaat?")
     reg_b[1] = hex_1
 #  ***********************************
 
@@ -65,12 +83,17 @@ def add_regs(reg1, reg2):
     else:
         val2 = get_dec_reg_b()
 
+    print(val1, val2)
     new_sum = val1 + val2
 
     if reg1 == "01":
         set_hex_reg_a(new_sum)
     else:
         set_hex_reg_b(new_sum)
+
+    print(new_sum)
+    print(reg_a)
+    print(reg_b)
 
 
 def sub_regs(reg1, reg2):
@@ -87,12 +110,14 @@ def sub_regs(reg1, reg2):
     else:
         val2 = get_dec_reg_b()
 
-    diff = val1 - val2
-
-    if reg1 == "01":
-        set_hex_reg_a(diff)
-    else:
-        set_hex_reg_b(diff)
+    # diff = val1 - val2
+    #
+    # if reg1 == "01":
+    #     set_hex_reg_a(diff)
+    # else:
+    #     set_hex_reg_b(diff)
+    #
+    # print(diff)
 
 
 def load(reg, loc):
@@ -143,6 +168,7 @@ def cycle():
         print("adding")
         add_regs(main_mem[indx+1], main_mem[indx+2])
     elif instr == "04":
+        print("subtracting")
         sub_regs(main_mem[indx+1], main_mem[indx+2])
     elif instr == "FF":
         print("stopping")
@@ -169,7 +195,7 @@ if __name__ == '__main__':
         "01",  # 3
         "02",  # 4
         "12",  # 5
-        "04",  # 6
+        "03",  # 6
         "01",  # 7
         "02",  # 8
         "02",  # 9
@@ -178,9 +204,9 @@ if __name__ == '__main__':
         "FF",  # 12
         "00",  # 13
         "00",  # 14
-        "00",  # 15
-        "00",  # 16
-        "10",  # 17
+        "01",  # 15
+        "01",  # 16
+        "02",  # 17
         "a1",  # 18
         "14",  # 19
     ]
