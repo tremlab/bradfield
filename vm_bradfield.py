@@ -19,46 +19,59 @@ reg_b = [0,0]
 #  lots of type and formatting stuff, unintersting to the underlying math that needs to be done.
 
 def get_dec_reg_a():
-    """takes the 2 str hex values saved in reg and parses them into their intended decimal int value.
+    """takes the 2 str hex values saved in reg_a and parses them into their intended decimal int value.
     """
-    return int(reg_a[0], 16) + (int(reg_a[1], 16)  * 256)
+    #  how is negative reflected in this two-part bigger nubmer?????
+    # I think logically either both parts are positove, or both are negative. ?
+    hex_0 = int(reg_a[0], 16) # converts 2 char string to hex type num for python
+    dec_0 = -(hex_0 & 0x80) | (hex_0 & 0x7f) # checks if negative two's complement
+
+    hex_1 = int(reg_a[1], 16)
+    dec_1 = -(hex_1 & 0x80) | (hex_1 & 0x7f)
+    return dec_0 + (dec_1 * 256)
 
 
 def get_dec_reg_b():
-    return int(reg_b[0], 16) + (int(reg_b[1], 16)  * 256)
+    hex_0 = int(reg_b[0], 16) # converts 2 char string to hex type num for python
+    dec_0 = -(hex_0 & 0x80) | (hex_0 & 0x7f)
+
+    hex_1 = int(reg_b[1], 16)
+    dec_1 = -(hex_1 & 0x80) | (hex_1 & 0x7f)
+    return dec_0 + (dec_1 * 256)
 
 
 def set_hex_reg_a(dec_num):
     """takes a decimal int, splits it into 2 components (remainder after / 256, value of / 256), and the converts each of those to hex int, and finally turns each into a string and stores them in the reg.
     """
-    # the built in hex() adds a "0x" to all its outputs, which interferes with how I'm handling the strings/values in this file.
-    hex_0 = str(hex(int(dec_num % 256))).strip("0x")
+    # two's complement????
 
-    if len(hex_0) == 1:
-        hex_0 = "0" + hex_0
-    if hex_0 == "":
-        print("whaaat?")
+    dec_0 = dec_num % 256
+    hex_0 = hex(dec_0 & -(2**8-1))
+    # dec_print = -(hex_0 & 0x80) | (hex_0 & 0x7f)
+    print("set hex", hex_0)
     reg_a[0] = hex_0
 
     # DRY!!!!!!!!  :(
-    hex_1 = str(hex(int(dec_num / 256))).strip("0x")
-    if len(hex_1) == 1:
-        hex_1 = "0" + hex_1
-    if hex_0 == "":
-        print("whaaat?")
+    dec_1 = int(dec_num / 256) # no floats, round down
+    hex_1 = hex(dec_1 & -(2**8-1))
     reg_a[1] = hex_1
+
+# #  input needs to be formatted by: s8(int(g, 16))  turns str hex into usable num
+# def s8(value):
+#     """will translate 8 bit hex into decimal, INCLUDING an evaluation if negative, using two's complement. input cannot be string, must have "0x" preceding hex digits.
+#     """
+#     return -(value & 0x80) | (value & 0x7f)﻿
 
 
 def set_hex_reg_b(dec_num):
     hex_0 = str(hex(int(dec_num % 256))).strip("0x")
-
 
     if len(hex_0) == 1:
         hex_0 = "0" + hex_0
     if hex_0 == "":
         print("whaaat?")
     reg_b[0] = hex_0
-    
+
     # DRY!!!!!!!!  :(
     hex_1 = str(hex(int(dec_num / 256))).strip("0x")
     if len(hex_1) == 1:
@@ -110,14 +123,14 @@ def sub_regs(reg1, reg2):
     else:
         val2 = get_dec_reg_b()
 
-    # diff = val1 - val2
-    #
-    # if reg1 == "01":
-    #     set_hex_reg_a(diff)
-    # else:
-    #     set_hex_reg_b(diff)
-    #
-    # print(diff)
+    diff = val1 - val2
+
+    if reg1 == "01":
+        set_hex_reg_a(diff)
+    else:
+        set_hex_reg_b(diff)
+
+    print(diff)
 
 
 def load(reg, loc):
@@ -148,7 +161,12 @@ def store(reg, loc):
 def halt():
     global main_mem
 
-    print(int(main_mem[14], 16) + (int(main_mem[15], 16)  * 256))
+    hex_0 = int(main_mem[0], 16) # converts 2 char string to hex type num for python
+    dec_0 = -(hex_0 & 0x80) | (hex_0 & 0x7f)
+
+    hex_1 = int(main_mem[1], 16)
+    dec_1 = -(hex_1 & 0x80) | (hex_1 & 0x7f)
+    print(dec_0 + (dec_1 * 256))
 
 
 def cycle():
@@ -204,14 +222,14 @@ if __name__ == '__main__':
         "FF",  # 12
         "00",  # 13
         "00",  # 14
-        "01",  # 15
+        "00",  # 15
         "01",  # 16
-        "02",  # 17
-        "a1",  # 18
-        "14",  # 19
+        "00",  # 17
+        "00",  # 18
+        "FF",  # 19
     ]
 
-    main()
+    # main()
 
 
         # load_word	$a	(10h)	  #	Load	input	1	into	register	a
