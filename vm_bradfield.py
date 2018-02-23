@@ -13,6 +13,7 @@ reg_pc = 0
 reg_a = [0,0]
 reg_b = [0,0]
 
+save_at = ""
 
 #  ***********************************
 #  factored away the complex steps of extracting and updating data on the reg's.
@@ -21,65 +22,44 @@ reg_b = [0,0]
 def get_dec_reg_a():
     """takes the 2 str hex values saved in reg_a and parses them into their intended decimal int value.
     """
-    #  how is negative reflected in this two-part bigger nubmer?????
-    # I think logically either both parts are positove, or both are negative. ?
-    hex_0 = int(reg_a[0], 16) # converts 2 char string to hex type num for python
-    dec_0 = -(hex_0 & 0x80) | (hex_0 & 0x7f) # checks if negative two's complement
+    dec_0 = int(reg_a[0], 16)
+    dec_1 = int(reg_a[1], 16)
 
-    hex_1 = int(reg_a[1], 16)
-    dec_1 = -(hex_1 & 0x80) | (hex_1 & 0x7f)
-    return dec_0 + (dec_1 * 256)
+    dec_val = dec_0 + (dec_1 * 256)
+    return dec_val
 
 
 def get_dec_reg_b():
-    hex_0 = int(reg_b[0], 16) # converts 2 char string to hex type num for python
-    dec_0 = -(hex_0 & 0x80) | (hex_0 & 0x7f)
+    dec_0 = int(reg_b[0], 16)
+    dec_1 = int(reg_b[1], 16)
 
-    hex_1 = int(reg_b[1], 16)
-    dec_1 = -(hex_1 & 0x80) | (hex_1 & 0x7f)
-    return dec_0 + (dec_1 * 256)
+    dec_val = dec_0 + (dec_1 * 256)
+    return dec_val
 
 
 def set_hex_reg_a(dec_num):
     """takes a decimal int, splits it into 2 components (remainder after / 256, value of / 256), and the converts each of those to hex int, and finally turns each into a string and stores them in the reg.
     """
-    # two's complement????
 
     dec_0 = dec_num % 256
-    hex_0 = hex(dec_0 & -(2**8-1))
-    # dec_print = -(hex_0 & 0x80) | (hex_0 & 0x7f)
-    print("set hex", hex_0)
+    hex_0 = hex(dec_0) #
     reg_a[0] = hex_0
 
     # DRY!!!!!!!!  :(
     dec_1 = int(dec_num / 256) # no floats, round down
-    hex_1 = hex(dec_1 & -(2**8-1))
+    hex_1 = hex(dec_1)
     reg_a[1] = hex_1
-
-# #  input needs to be formatted by: s8(int(g, 16))  turns str hex into usable num
-# def s8(value):
-#     """will translate 8 bit hex into decimal, INCLUDING an evaluation if negative, using two's complement. input cannot be string, must have "0x" preceding hex digits.
-#     """
-#     return -(value & 0x80) | (value & 0x7f)﻿
 
 
 def set_hex_reg_b(dec_num):
-    hex_0 = str(hex(int(dec_num % 256))).strip("0x")
-
-    if len(hex_0) == 1:
-        hex_0 = "0" + hex_0
-    if hex_0 == "":
-        print("whaaat?")
+    dec_0 = dec_num % 256
+    hex_0 = hex(dec_0) #
     reg_b[0] = hex_0
 
     # DRY!!!!!!!!  :(
-    hex_1 = str(hex(int(dec_num / 256))).strip("0x")
-    if len(hex_1) == 1:
-        hex_1 = "0" + hex_1
-    if hex_1 == "":
-        print("whaaat?")
+    dec_1 = int(dec_num / 256) # no floats, round down
+    hex_1 = hex(dec_1)
     reg_b[1] = hex_1
-#  ***********************************
 
 
 def add_regs(reg1, reg2):
@@ -96,17 +76,12 @@ def add_regs(reg1, reg2):
     else:
         val2 = get_dec_reg_b()
 
-    print(val1, val2)
     new_sum = val1 + val2
 
     if reg1 == "01":
         set_hex_reg_a(new_sum)
     else:
         set_hex_reg_b(new_sum)
-
-    print(new_sum)
-    print(reg_a)
-    print(reg_b)
 
 
 def sub_regs(reg1, reg2):
@@ -150,22 +125,29 @@ def store(reg, loc):
     global reg_a
     global reg_b
     global main_mem
+    global save_at
+
+    save_at = loc
 
     if reg == "01":
         main_mem[int(loc, 16)] = reg_a[0]
         main_mem[int(loc, 16) + 1] = reg_a[1]
     else:
-        main_mem[int(loc, 16)] = reg_b
+        main_mem[int(loc, 16)] = reg_b[0]
+        main_mem[int(loc, 16) + 1] = reg_b[1]
 
 
 def halt():
     global main_mem
+    global save_at
+    indx = int(save_at, 16)
+    # ?? hard code where the final saved memory loc is?
+    # or declare global, so the defined save point is accesable for printing  <--
+    #  or pass to the next function???
 
-    hex_0 = int(main_mem[0], 16) # converts 2 char string to hex type num for python
-    dec_0 = -(hex_0 & 0x80) | (hex_0 & 0x7f)
+    dec_0 = int(main_mem[indx], 16)
 
-    hex_1 = int(main_mem[1], 16)
-    dec_1 = -(hex_1 & 0x80) | (hex_1 & 0x7f)
+    dec_1 = int(main_mem[indx + 1], 16)
     print(dec_0 + (dec_1 * 256))
 
 
@@ -225,11 +207,11 @@ if __name__ == '__main__':
         "00",  # 15
         "01",  # 16
         "00",  # 17
-        "00",  # 18
+        "F1",  # 18
         "FF",  # 19
     ]
 
-    # main()
+    main()
 
 
         # load_word	$a	(10h)	  #	Load	input	1	into	register	a
